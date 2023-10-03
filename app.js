@@ -9,31 +9,29 @@ const { parse, stringify, toJSON, fromJSON } = require("flatted");
 const app = express();
 // app.use(fileUpload());
 
-
 const storage = multer.diskStorage({
-  destination:(req, res, cb) =>{
-    const tempDir = 'uploads';
+  destination: (req, res, cb) => {
+    const tempDir = "uploads";
     fs.mkdirSync(tempDir, { recursive: true });
     cb(null, tempDir);
   },
   filename: (req, file, cb) => {
-    const uniqueFileName =  file.filename  + path.extname(file.originalname);
+    const uniqueFileName = file.filename + path.extname(file.originalname);
     cb(null, uniqueFileName);
   },
 });
 
 const upload = multer({ storage });
 
-app.post("/api/change",upload.single('file'), async (req, res) => {
+app.post("/api/change", upload.single("file"), async (req, res) => {
   try {
-   
-    const excelBuffer = req.file.path; 
-    console.log(excelBuffer);  
+    const excelBuffer = req.file.path;
+    console.log(excelBuffer);
     const workbook = XlsxPopulate.fromFileAsync(excelBuffer);
-   const name = excelBuffer.split('/')
-   console.log(name)
+    const name = excelBuffer.split("/");
+    console.log(name);
     workbook.then((book) => {
-      book.toFileAsync('here.xlsx', { password: "123" });
+      book.toFileAsync("here.xlsx", { password: "123" });
       res.setHeader(
         "Content-Disposition",
         "attachment; filename=protected_excel.xlsx"
@@ -43,10 +41,12 @@ app.post("/api/change",upload.single('file'), async (req, res) => {
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       );
       const file = path.join(__dirname, "here.xlsx");
+      // check if the path exist if not mkdir(file);
+      // then send the file to the client
       res.status(200).sendFile(file);
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).send(error.message);
   }
 });
